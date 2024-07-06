@@ -1,0 +1,452 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diplomska naloga</title>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script> 
+    <style>
+body, html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+}
+
+.screen {
+    display: flex;
+    height: 100%;
+}
+
+.menu {
+    width: 200px;
+    padding: 20px;
+    background-color: #f1f1f1;
+}
+
+.menu-item {
+    display: block;
+    width: 100%;
+    height: 24%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: none;
+    border-radius: 5px;
+    background-color: #fff;
+    color: #333;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.menu-unlock {
+    background-color: #a3ffa4;
+}
+
+.menu-alarm {
+    background-color: #ffa3a3;
+}
+
+.menu-item:hover {
+    background-color: #ddd;
+}
+
+.content {
+    flex: 1;
+    padding: 20px;
+}
+
+#camFeed {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    max-width: 70%;
+    transform: translate(10%, 0%);
+}
+
+#camFeedPop {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    max-width: 90%;
+    max-height: 90%;
+    z-index: 9999;
+}
+
+.overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9998;
+            display: none;
+        }
+
+.overlay.active {
+    display: block;
+}
+
+.people {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+}
+
+.person {
+    position: relative;
+    width: calc(33.33% - 10px);
+    margin-bottom: 20px;
+}
+
+.add_person {
+    position: relative;
+    width: calc(33.33% - 10px);
+    margin-bottom: 20px;
+}
+
+.people_button {
+    width: 150px; 
+    height: 150px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin: 10px;
+}
+
+.edit-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.edit-button {
+    background-color: transparent;
+    border: none;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+}
+
+.add-button {
+    background-color: transparent;
+    border: none;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+}
+
+.person:hover .edit-overlay {
+    background-color: rgba(255, 255, 255, 0.5);
+    backdrop-filter: blur(5px);
+}
+
+.add_person:hover .edit-overlay {
+    background-color: rgba(255, 255, 255, 0.5);
+    backdrop-filter: blur(5px);
+}
+
+a {
+    color: rgb(57, 57, 57);
+    text-decoration: none;
+}     
+
+#add-section {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(10px);
+    padding: 20px;
+
+    border-radius: 10px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
+    z-index: 999;
+}
+
+#edit-section {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: rgba(255, 255, 255, 0.8); 
+    backdrop-filter: blur(10px); 
+    padding: 20px;
+    border-radius: 10px; 
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
+    z-index: 999; 
+}
+
+button {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: none;
+    border-radius: 5px;
+    background-color: #fff;
+    color: #333;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+.hoverable:hover {
+    background-color: #ddd;
+}
+
+input {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: none;
+    border-radius: 5px;
+    background-color: #fff;
+    color: #333;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+    </style>
+</head>
+
+
+<body>
+    <div class="screen">
+        <div class="menu">
+            <input type="button" class="menu-item menu-camera" onclick="redirectToAccounts('cam')" value="Camera" />
+            <input type="button" class="menu-item menu-people" onclick="redirectToAccounts('people')" value="People" />
+            <input type="button" class="menu-item menu-unlock" onclick="redirectToAccounts('unlock')" value="Unlock" />
+            <input type="button" class="menu-item menu-alarm" onclick="redirectToAccounts('alarm')" value="Alarm" />
+        </div>
+        <div class="content">
+            <div class="people">
+                {% for item in folder_items %}
+                    <div class="person">
+                        <img class="people_button" src="{{ url_for('static', filename="known_people/"+item) }}" alt="{{ item }}" width="100">
+                        <div class="edit-overlay">
+                            <button class="edit-button"></button>
+                        </div>
+                    </div>
+                {% endfor %}
+                <div class="add_person">
+                    <img class="people_button" src="static/plus2.png" alt="add" width="100" style="background-color: #cecece;">
+                    <div class="edit-overlay">
+                        <button class="add-button"></button>
+                    </div>
+                </div>
+            </div>
+            <div id="edit-section" style="display: none;">
+                <h2>Edit Image</h2>
+                <input type="text" id="new-name" placeholder="Enter new name">
+                <button id="rename-button" class="hoverable">Rename</button>
+                <button id="delete-button" class="hoverable" style="background-color: rgba(242, 79, 79, 0.512);">Delete</button>
+                <button id="close-edit-section" class="hoverable">Cancel</button>
+            </div>
+            <div id="add-section" style="display: none;">
+                <h1>Add a New Person</h1>
+                <input type="text" id="add-name" placeholder="Enter a name">
+                <button id="add-person" class="hoverable">Take a picture</button>
+                <button id="close-add-section" class="hoverable">Cancel</button>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="overlay"></div>
+
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+    <script>
+        
+
+        function redirectToAccounts(page) {
+            if (page == "cam") {var url = "{{ url_for('stream') }}"; window.location.href = url;}
+            else if (page == "people") {var url = "{{ url_for('accounts') }}"; window.location.href = url;}
+            else if (page == "unlock") {
+                fetch('/unlock', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },                    
+                })      
+                console.log("unlocked")
+            }
+            else if (page == "alarm") {
+                fetch('/alarm', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },                    
+                })                
+            }    
+        }
+
+        // check for flag from the outside app
+        function checkForActionFlag() {
+            fetch('/check_flag')
+            .then(response => response.json())
+            .then(data => {
+                if (data.action_needed) {
+                    window.location.href = "{{ url_for('stream') }}";
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+        setInterval(checkForActionFlag, 100);
+
+        var screen = document.querySelector('.screen');
+
+        document.querySelectorAll('.person').forEach(item => {
+            const editButton = item.querySelector('.edit-button');
+            const img = item.querySelector('.people_button');
+            editButton.addEventListener('click', () => {
+                var addSection = document.getElementById('add-section');
+                addSection.style.display = 'none';
+                const imageName = img.getAttribute('alt');
+                
+                // Show the edit section
+                document.getElementById('edit-section').style.display = 'block';
+                document.getElementById('new-name').value = imageName;
+                document.getElementById('rename-button').addEventListener('click', () => {
+                    const newName = document.getElementById('new-name').value;
+                    if (newName === '') {
+                        alert('Name cannot be empty');
+                        return;
+                    }
+                    else {
+                        renameImage(imageName, newName);
+                    }
+                });
+                
+                document.getElementById('delete-button').addEventListener('click', () => {
+                    deleteImage(imageName);
+                });
+            });
+        });
+
+        document.getElementById('close-edit-section').addEventListener('click', function() {
+            var editSection = document.getElementById('edit-section');
+            editSection.style.display = 'none';
+        });
+
+        document.querySelector('.add-button').addEventListener('click', function() {
+            let password
+            fetch('/pw')
+                .then(response => response.text())
+                .then(data => checkpw(data))
+        });
+
+        function checkpw(pw) {
+            var input_pass = prompt("Enter App Password:");
+            if(pw == input_pass) {            
+                var addSection = document.getElementById('add-section');
+                if (addSection.style.display === 'none') {
+                    addSection.style.display = 'block';
+                } else {
+                    addSection.style.display = 'none';
+                }
+            }
+        }
+
+        document.getElementById('add-person').addEventListener('click', function() {
+            var editSection = document.getElementById('edit-section');
+            editSection.style.display = 'none';
+            // Retrieve the value entered in the input field
+            var name = document.getElementById('add-name').value;
+            if (name === '') {
+                alert('Name field cannot be empty');
+                return;
+            }
+            else{
+                fetch('/add_person', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        name: name,
+                    }),
+                })
+                .then(response => {
+                    if (response.ok) {
+                        console.log('Person added successfully');
+                    } else {
+                        console.error('Error adding person');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error adding person:', error);
+                });
+                // refresh the page after 3 seconds
+                setTimeout(function() {
+                    location.reload();
+                }, 3000);
+            }
+        });
+
+        document.getElementById('close-add-section').addEventListener('click', function() {
+            var addSection = document.getElementById('add-section');
+            addSection.style.display = 'none';
+        });
+
+        function renameImage(oldName, newName) {
+            fetch('/rename-image', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    oldName: oldName,
+                    newName: newName,
+                }),
+            })
+            .then(response => {
+                if (response.ok) {
+                } else {
+                    console.error('Error renaming image');
+                }
+            })
+            .catch(error => {
+                console.error('Error renaming image:', error);
+            });
+            setTimeout(function() {
+            location.reload();
+            }, 500);
+        }
+
+        function deleteImage(imageName) {
+            fetch('/delete-image', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    imageName: imageName,
+                }),
+            })
+            .then(response => {
+                if (response.ok) {
+                    console.log('Image deleted successfully');
+                } else {
+                    console.error('Error deleting image');
+                }
+            })
+            .catch(error => {
+                console.error('Error deleting image:', error);
+            });
+            location.reload();
+        }
+
+    </script>
+
+</body>
+</html>

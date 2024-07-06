@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Diplomska Naloga</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+        }
+
+        .screen {
+            display: flex;
+            height: 100%;
+        }
+
+        .menu {
+            width: 200px;
+            padding: 20px;
+            background-color: #f1f1f1;
+        }
+
+        .menu-item {
+            display: block;
+            width: 100%;
+            height: 24%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: none;
+            border-radius: 5px;
+            background-color: #fff;
+            color: #333;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .menu-unlock {
+            background-color: #a3ffa4;
+        }
+
+        .menu-alarm {
+            background-color: #ffa3a3;
+        }
+
+        .menu-item:hover {
+            background-color: #ddd;
+        }
+
+        .content {
+            flex: 1;
+            padding: 20px;
+        }
+
+        #camFeed {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            max-width: 70%;
+            transform: translate(10%, 0%);
+        }
+
+        #camFeedPop {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            max-width: 90%;
+            max-height: 90%;
+            z-index: 9999;
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9998;
+            display: none;
+        }
+
+        .overlay.active {
+            display: block;
+        }
+
+        .people {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+        }
+
+        .person {
+            position: relative;
+            width: calc(33.33% - 10px);
+            margin-bottom: 20px;
+        }
+
+        .add_person {
+            position: relative;
+            width: calc(33.33% - 10px);
+            margin-bottom: 20px;
+        }
+
+        .people_button {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin: 10px;
+        }
+
+        .edit-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .edit-button {
+            background-color: transparent;
+            border: none;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        .add-button {
+            background-color: transparent;
+            border: none;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        .person:hover .edit-overlay {
+            background-color: rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(5px);
+        }
+
+        .add_person:hover .edit-overlay {
+            background-color: rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(5px);
+        }
+
+        a {
+            color: rgb(57, 57, 57);
+            text-decoration: none;
+        }
+
+        #add-section, #edit-section {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+
+        .form {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: none;
+            border-radius: 5px;
+            background-color: #fff;
+            color: #333;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .hoverable:hover {
+            background-color: #ddd;
+        }
+    </style>
+</head>
+<body onload="checkPW()">
+    <div class="screen">
+        <div class="menu">
+            <input type="button" class="menu-item menu-camera" onclick="redirectToAccounts('cam')" value="Camera" />
+            <input type="button" class="menu-item menu-people" onclick="redirectToAccounts('people')" value="People" />
+            <input type="button" class="menu-item menu-unlock" onclick="redirectToAccounts('unlock')" value="Unlock" />
+            <input type="button" class="menu-item menu-alarm" onclick="redirectToAccounts('alarm')" value="Alarm" />
+        </div>
+        <div class="content">
+            <h1>Settings</h1>
+            <form action="/settings" method="POST">
+                <label for="camera_ip">Camera IP:</label>
+                <input class="form" type="text" id="camera_ip" name="camera_ip">
+
+                <label for="camera_name">Camera Name:</label>
+                <input class="form" type="text" id="camera_name" name="camera_name">
+
+                <label for="camera_password">Camera Password:</label>
+                <input class="form" type="password" id="camera_password" name="camera_password">
+
+                <label for="app_password">App Password:</label>
+                <input class="form" type="password" id="app_password" name="app_password">
+
+                <button class="form" type="submit" class="hoverable">Submit</button>
+            </form>
+        </div>
+    </div>
+    <script>
+        function redirectToAccounts(page) {
+            if (page == "cam") {var url = "{{ url_for('stream') }}"; window.location.href = url;}
+            else if (page == "people") {var url = "{{ url_for('accounts') }}"; window.location.href = url;}
+            else if (page == "unlock") {
+                fetch('/unlock', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },                    
+                })      
+                console.log("unlocked")
+            }
+            else if (page == "alarm") {
+                fetch('/alarm', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },                    
+                })                
+            }            
+        }
+
+        function checkPW() {
+            let password
+            fetch('/pw')
+                .then(response => response.text())
+                .then(data => checkpw(data))
+        }
+
+        function checkpw(pw) {
+            var input_pass = prompt("Enter App Password:");
+            if(pw == '') {}
+            else if(pw != input_pass) {            
+                window.location.href = "http://127.0.0.1:5000";
+            }
+        }
+
+    </script>
+</body>
+</html>
